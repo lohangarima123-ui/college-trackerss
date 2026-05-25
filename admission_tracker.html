@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My College Admission Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #12121a;
+    --bg3: #1a1a26;
+    --card: #16161f;
+    --border: #2a2a3a;
+    --accent: #7c6cfc;
+    --accent2: #fc6c9a;
+    --accent3: #6cfcd4;
+    --gold: #ffd166;
+    --text: #e8e8f0;
+    --muted: #7a7a9a;
+    --green: #4ade80;
+    --red: #f87171;
+    --orange: #fb923c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 20% 20%, rgba(124,108,252,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(252,108,154,0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(108,252,212,0.03) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  /* Header */
+  header {
+    padding: 32px 0 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+    position: sticky;
+    top: 0;
+    background: rgba(10,10,15,0.95);
+    backdrop-filter: blur(20px);
+    z-index: 100;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--text), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px;
+  }
+
+  .tab {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .tab.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 2px 12px rgba(124,108,252,0.4);
+  }
+
+  .tab:hover:not(.active) { color: var(--text); background: var(--bg3); }
+
+  /* Stats bar */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    transition: border-color 0.2s;
+  }
+
+  .stat-card:hover { border-color: var(--accent); }
+
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 700; }
+  .stat-value.purple { color: var(--accent); }
+  .stat-value.pink { color: var(--accent2); }
+  .stat-value.green { color: var(--green); }
+  .stat-value.gold { color: var(--gold); }
+
+  /* Section */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* College table section */
+  .table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .filter-btn.active, .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* College Cards */
+  .colleges-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .college-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.25s;
+    position: relative;
+  }
+
+  .college-card:hover { border-color: rgba(124,108,252,0.5); box-shadow: 0 4px 24px rgba(124,108,252,0.08); }
+
+  .college-card.starred { border-color: rgba(255,209,102,0.3); }
+  .college-card.starred::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+
+  .card-main {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    padding: 20px;
+    align-items: start;
+  }
+
+  .card-left { display: flex; flex-direction: column; gap: 8px; }
+
+  .college-name-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .college-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .badge {
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-iim { background: rgba(124,108,252,0.15); color: var(--accent); border: 1px solid rgba(124,108,252,0.3); }
+  .badge-iit { background: rgba(108,252,212,0.1); color: var(--accent3); border: 1px solid rgba(108,252,212,0.25); }
+  .badge-law { background: rgba(252,108,154,0.1); color: var(--accent2); border: 1px solid rgba(252,108,154,0.25); }
+  .badge-private { background: rgba(255,209,102,0.1); color: var(--gold); border: 1px solid rgba(255,209,102,0.25); }
+  .badge-du { background: rgba(251,146,60,0.1); color: var(--orange); border: 1px solid rgba(251,146,60,0.25); }
+  .badge-top { background: rgba(74,222,128,0.1); color: var(--green); border: 1px solid rgba(74,222,128,0.25); }
+
+  .college-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .meta-item { display: flex; align-items: center; gap: 4px; }
+  .meta-item strong { color: var(--text); font-weight: 500; }
+
+  .card-dates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .date-chip {
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .date-chip.deadline { background: rgba(248,113,113,0.12); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+  .date-chip.commence { background: rgba(74,222,128,0.1); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+  .date-chip.refund { background: rgba(255,209,102,0.1); color: var(--gold); border: 1px solid rgba(255,209,102,0.2); }
+  .date-chip.exam { background: rgba(124,108,252,0.12); color: var(--accent); border: 1px solid rgba(124,108,252,0.25); }
+
+  .card-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    min-width: 140px;
+  }
+
+  .fees-display { text-align: right; }
+  .fees-amount {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold);
+  }
+  .fees-label { font-size: 10px; color: var(--muted); }
+
+  .roi-bar {
+    width: 120px;
+  }
+  .roi-label { font-size: 10px; color: var(--muted); margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .roi-track { height: 4px; background: var(--bg3); border-radius: 2px; }
+  .roi-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--accent3)); transition: width 0.5s; }
+
+  .card-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .action-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    color: var(--muted);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+
+  .action-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .action-btn.star-btn.starred { border-color: var(--gold); color: var(--gold); background: rgba(255,209,102,0.1); }
+
+  .status-select {
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    color: var(--text);
+    font-size: 11px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    outline: none;
+  }
+
+  /* Expand/collapse notes */
+  .card-notes {
+    padding: 0 20px 16px;
+    font-size: 12px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    display: none;
+  }
+
+  .card-notes.open { display: block; }
+  .card-notes p { line-height: 1.6; }
+  .card-notes strong { color: var(--text); }
+
+  /* Checklist */
+  .checklist-section { }
+  .checklist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 16px;
+  }
+
+  .checklist-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .checklist-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .checklist-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .progress-pill {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--bg3);
+    color: var(--muted);
+  }
+
+  .progress-pill.done { background: rgba(74,222,128,0.1); color: var(--green); }
+
+  .checklist-items { padding: 8px 0; }
+
+  .checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .checklist-item:hover { background: rgba(255,255,255,0.02); }
+
+  .check-box {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    font-size: 11px;
+  }
+
+  .checklist-item.checked .check-box {
+    background: var(--green);
+    border-color: var(--green);
+    color: #0a0a0f;
+  }
+
+  .check-label {
+    font-size: 13px;
+    flex: 1;
+    transition: opacity 0.2s;
+  }
+
+  .checklist-item.checked .check-label {
+    opacity: 0.4;
+    text-decoration: line-through;
+  }
+
+  .check-tag {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: var(--bg3);
+    color: var(--muted);
+  }
+
+  /* Timeline */
+  .timeline { display: flex; flex-direction: column; gap: 0; position: relative; }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 18px; top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent), var(--accent2), transparent);
+  }
+
+  .timeline-item {
+    display: flex;
+    gap: 20px;
+    padding: 0 0 24px 0;
+    position: relative;
+  }
+
+  .tl-dot {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .tl-dot.urgent { background: rgba(248,113,113,0.15); border: 2px solid var(--red); }
+  .tl-dot.normal { background: rgba(124,108,252,0.15); border: 2px solid var(--accent); }
+  .tl-dot.done { background: rgba(74,222,128,0.1); border: 2px solid var(--green); }
+  .tl-dot.soon { background: rgba(255,209,102,0.1); border: 2px solid var(--gold); }
+
+  .tl-content {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-top: 4px;
+  }
+
+  .tl-college { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; }
+  .tl-event { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .tl-date { font-size: 12px; font-weight: 600; margin-top: 6px; }
+  .tl-date.red { color: var(--red); }
+  .tl-date.gold { color: var(--gold); }
+  .tl-date.green { color: var(--green); }
+  .tl-date.purple { color: var(--accent); }
+
+  /* Notes section */
+  .notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+
+  .note-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    position: relative;
+  }
+
+  .note-card:hover { border-color: var(--accent); }
+
+  .note-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+  .note-college { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; }
+  .note-date { font-size: 10px; color: var(--muted); }
+  .note-content { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .note-tag { font-size: 10px; padding: 2px 8px; border-radius: 4px; margin-top: 10px; display: inline-block; }
+  .note-tag.strategy { background: rgba(124,108,252,0.15); color: var(--accent); }
+  .note-tag.concern { background: rgba(248,113,113,0.12); color: var(--red); }
+  .note-tag.insight { background: rgba(74,222,128,0.1); color: var(--green); }
+
+  /* Edit Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    width: 100%;
+    max-width: 680px;
+    max-height: 85vh;
+    overflow-y: auto;
+    transform: translateY(20px);
+    transition: transform 0.25s;
+  }
+
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .close-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .close-btn:hover { color: var(--text); border-color: var(--text); }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; }
+
+  input, select, textarea {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 72px; }
+
+  .form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 24px;
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+  }
+
+  .btn-primary {
+    padding: 10px 24px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 12px rgba(124,108,252,0.3);
+  }
+
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(124,108,252,0.45); }
+
+  .btn-secondary {
+    padding: 10px 20px;
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover { color: var(--text); border-color: var(--text); }
+
+  .btn-danger {
+    padding: 10px 20px;
+    background: rgba(248,113,113,0.1);
+    color: var(--red);
+    border: 1px solid rgba(248,113,113,0.3);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-right: auto;
+  }
+
+  .btn-danger:hover { background: rgba(248,113,113,0.2); }
+
+  /* Add college btn */
+  .add-btn {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 16px rgba(124,108,252,0.3);
+  }
+
+  .add-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 24px rgba(124,108,252,0.45); }
+
+  /* Countdown pill */
+  .countdown {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+
+  .countdown.urgent { background: rgba(248,113,113,0.15); color: var(--red); }
+  .countdown.warn { background: rgba(255,209,102,0.12); color: var(--gold); }
+  .countdown.safe { background: rgba(74,222,128,0.1); color: var(--green); }
+  .countdown.past { background: var(--bg3); color: var(--muted); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border); }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .card-main { grid-template-columns: 1fr; }
+    .card-right { flex-direction: row; flex-wrap: wrap; min-width: auto; align-items: center; }
+    .college-meta { gap: 10px; }
+    .checklist-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+
+  .empty-state h3 { font-family: 'Syne', sans-serif; font-size: 18px; margin-bottom: 8px; color: var(--text); }
+
+  /* Tooltip */
+  [data-tip] { position: relative; cursor: help; }
+  [data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%; transform: translateX(-50%);
+    background: var(--bg3);
+    color: var(--text);
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    border: 1px solid var(--border);
+    z-index: 999;
+    pointer-events: none;
+  }
+
+  .section-subheader {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+
+  select option { background: var(--bg2); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">🎓</div>
+        <div>
+          <h1>AdmissionOS</h1>
+          <div class="header-sub">Your Personal College Admission Command Centre</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="tabs">
+          <button class="tab active" onclick="showTab('colleges')">🏛 Colleges</button>
+          <button class="tab" onclick="showTab('checklist')">✅ Checklist</button>
+          <button class="tab" onclick="showTab('timeline')">📅 Timeline</button>
+          <button class="tab" onclick="showTab('notes')">📝 Notes</button>
+        </div>
+        <button class="add-btn" onclick="openAddModal()">+ Add College</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="container" style="padding-top: 8px; padding-bottom: 60px;">
+
+  <!-- Stats -->
+  <div class="stats-bar" id="statsBar">
+    <div class="stat-card">
+      <div class="stat-label">Total Colleges</div>
+      <div class="stat-value purple" id="statTotal">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Starred / Target</div>
+      <div class="stat-value gold" id="statStarred">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Applied</div>
+      <div class="stat-value green" id="statApplied">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Deadlines This Month</div>
+      <div class="stat-value pink" id="statDeadlines">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Checklist Done</div>
+      <div class="stat-value" style="color:var(--accent3)" id="statChecklist">0%</div>
+    </div>
+  </div>
+
+  <!-- COLLEGES TAB -->
+  <div class="section active" id="tab-colleges">
+    <div class="table-header">
+      <div class="section-title">All Colleges</div>
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="filterColleges('all',this)">All</button>
+        <button class="filter-btn" onclick="filterColleges('starred',this)">⭐ Starred</button>
+        <button class="filter-btn" onclick="filterColleges('applied',this)">Applied</button>
+        <button class="filter-btn" onclick="filterColleges('iim',this)">IIM</button>
+        <button class="filter-btn" onclick="filterColleges('iit',this)">IIT</button>
+        <button class="filter-btn" onclick="filterColleges('law',this)">Law</button>
+      </div>
+    </div>
+    <div class="colleges-grid" id="collegesGrid"></div>
+  </div>
+
+  <!-- CHECKLIST TAB -->
+  <div class="section" id="tab-checklist">
+    <div class="table-header">
+      <div class="section-title">Admission Checklist</div>
+    </div>
+    <p class="section-subheader">Track everything you need to prepare. Tick off as you go.</p>
+    <div class="checklist-grid" id="checklistGrid"></div>
+  </div>
+
+  <!-- TIMELINE TAB -->
+  <div class="section" id="tab-timeline">
+    <div class="table-header">
+      <div class="section-title">Upcoming Deadlines & Events</div>
+    </div>
+    <p class="section-subheader">All important dates sorted chronologically.</p>
+    <div class="timeline" id="timelineEl"></div>
+  </div>
+
+  <!-- NOTES TAB -->
+  <div class="section" id="tab-notes">
+    <div class="table-header">
+      <div class="section-title">My Research Notes</div>
+      <button class="add-btn" onclick="openAddNote()">+ Add Note</button>
+    </div>
+    <div class="notes-grid" id="notesGrid"></div>
+  </div>
+
+</div>
+
+<!-- EDIT / ADD COLLEGE MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="modalTitle">Add College</span>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>College Name</label>
+        <input type="text" id="f_name" placeholder="e.g. Indian Institute of Management Bangalore">
+      </div>
+      <div class="form-group">
+        <label>Program</label>
+        <input type="text" id="f_program" placeholder="e.g. BBA DBE">
+      </div>
+      <div class="form-group">
+        <label>Mode</label>
+        <select id="f_mode">
+          <option>Residential</option>
+          <option>Online</option>
+          <option>Hybrid</option>
+          <option>Online-Hybrid / Residential</option>
+          <option>Day Scholar</option>
+          <option>Residential/Day Scholar</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Duration</label>
+        <input type="text" id="f_duration" placeholder="e.g. 3 Years">
+      </div>
+      <div class="form-group">
+        <label>Total Fees (Approx.)</label>
+        <input type="text" id="f_fees" placeholder="e.g. ₹4.5L or ₹13L–₹30L">
+      </div>
+      <div class="form-group">
+        <label>Exam / Selection</label>
+        <input type="text" id="f_exam" placeholder="e.g. JIPMAT 2026">
+      </div>
+      <div class="form-group">
+        <label>Last Date to Apply</label>
+        <input type="text" id="f_apply_date" placeholder="e.g. 30 June 2026">
+      </div>
+      <div class="form-group">
+        <label>Exam Date</label>
+        <input type="text" id="f_exam_date" placeholder="e.g. 26 July 2026">
+      </div>
+      <div class="form-group">
+        <label>Course Commencement Date</label>
+        <input type="text" id="f_commence" placeholder="e.g. August 2026">
+      </div>
+      <div class="form-group">
+        <label>Last Refund Date</label>
+        <input type="text" id="f_refund" placeholder="e.g. October 2026">
+      </div>
+      <div class="form-group">
+        <label>ROI Rating (1–10)</label>
+        <input type="number" id="f_roi" min="1" max="10" placeholder="e.g. 8">
+      </div>
+      <div class="form-group">
+        <label>Type / Category</label>
+        <select id="f_type">
+          <option value="iim">IIM</option>
+          <option value="iit">IIT</option>
+          <option value="law">Law</option>
+          <option value="private">Private</option>
+          <option value="du">DU / Central Univ</option>
+          <option value="top">Top Institute</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Application Status</label>
+        <select id="f_status">
+          <option value="not_started">Not Started</option>
+          <option value="researching">Researching</option>
+          <option value="applied">Applied ✓</option>
+          <option value="exam_scheduled">Exam Scheduled</option>
+          <option value="results_awaited">Results Awaited</option>
+          <option value="offer_received">Offer Received 🎉</option>
+          <option value="rejected">Rejected</option>
+          <option value="not_applying">Not Applying</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>Notes / Key Info</label>
+        <textarea id="f_notes" placeholder="e.g. Strong IIM brand + flexibility. Entrance test on 26 July. Good for management + tech blend..."></textarea>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-danger" id="deleteBtn" onclick="deleteCollege()" style="display:none">🗑 Delete</button>
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveCollege()">Save College</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTE MODAL -->
+<div class="modal-overlay" id="noteModal">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="noteModalTitle">Add Note</span>
+      <button class="close-btn" onclick="closeNoteModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>College</label>
+        <input type="text" id="n_college" placeholder="College name or General">
+      </div>
+      <div class="form-group">
+        <label>Tag</label>
+        <select id="n_tag">
+          <option value="strategy">Strategy</option>
+          <option value="concern">Concern</option>
+          <option value="insight">Insight</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>Note</label>
+        <textarea id="n_content" placeholder="Write your research note, strategy, or concern..." style="min-height:120px"></textarea>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-danger" id="noteDeleteBtn" onclick="deleteNote()" style="display:none">🗑 Delete</button>
+      <button class="btn-secondary" onclick="closeNoteModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveNote()">Save Note</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+
+let editingIndex = -1;
+let editingNoteIndex = -1;
+let currentFilter = 'all';
+
+const STATUS_LABELS = {
+  not_started: '⬜ Not Started',
+  researching: '🔍 Researching',
+  applied: '✅ Applied',
+  exam_scheduled: '📅 Exam Scheduled',
+  results_awaited: '⏳ Results Awaited',
+  offer_received: '🎉 Offer Received',
+  rejected: '❌ Rejected',
+  not_applying: '🚫 Not Applying'
+};
+
+const TYPE_BADGES = {
+  iim: ['IIM', 'badge-iim'],
+  iit: ['IIT', 'badge-iit'],
+  law: ['Law', 'badge-law'],
+  private: ['Private', 'badge-private'],
+  du: ['DU', 'badge-du'],
+  top: ['Top', 'badge-top'],
+  other: ['', '']
+};
+
+// Default colleges from your screenshots
+const defaultColleges = [
+  {
+    name: "NALSAR University of Law",
+    program: "IPM (Integrated BBA + MBA)",
+    mode: "Residential",
+    duration: "5 Years",
+    fees: "₹22L–₹23L",
+    exam: "N-MET UG / IPMAT + PI",
+    apply_date: "31 May 2026",
+    exam_date: "June 2026",
+    commence: "August 2026",
+    refund: "October 2026",
+    roi: 9,
+    type: "law",
+    status: "researching",
+    notes: "Strong legal-business blend. Hyderabad exposure. Growing IPM reputation. N-MET UG exam + PI. One of your strongest serious options given you're taking it.",
+    starred: true
+  },
+  {
+    name: "NALSAR University of Law",
+    program: "BBA LLB",
+    mode: "Residential",
+    duration: "5 Years",
+    fees: "₹18L–₹22L",
+    exam: "CLAT",
+    apply_date: "CLAT cycle",
+    exam_date: "May 2026",
+    commence: "August 2026",
+    refund: "October 2026",
+    roi: 8,
+    type: "law",
+    status: "researching",
+    notes: "Elite law + corporate law exposure. CLAT-based admission. Same campus as IPM.",
+    starred: true
+  },
+  {
+    name: "Indian Institute of Management Bangalore",
+    program: "BBA DBE",
+    mode: "Online",
+    duration: "3 Years",
+    fees: "~₹4.5L",
+    exam: "Entrance Test: 26 July 2026",
+    apply_date: "30 June 2026",
+    exam_date: "26 July 2026",
+    commence: "August 2026",
+    refund: "Within 15 days of joining",
+    roi: 9,
+    type: "iim",
+    status: "researching",
+    notes: "Elite IIM brand + flexibility. Online but IIM Bangalore tag is extremely valuable. Low cost, high brand ROI.",
+    starred: true
+  },
+  {
+    name: "Indian Institute of Management Jammu",
+    program: "eBBA / IPM",
+    mode: "Online-Hybrid / Residential",
+    duration: "4–5 Years",
+    fees: "~₹13L–₹30L",
+    exam: "JIPMAT 2026",
+    apply_date: "JIPMAT cycle ongoing",
+    exam_date: "June 2026",
+    commence: "August 2026",
+    refund: "As per IIM policy",
+    roi: 7,
+    type: "iim",
+    status: "not_started",
+    notes: "Growing IIM with newer ecosystem. JIPMAT based. Good stepping stone if targeting IIM brand.",
+    starred: false
+  },
+  {
+    name: "Indian Institute of Management Kozhikode",
+    program: "BMS (Business Management Studies)",
+    mode: "Residential",
+    duration: "4 Years",
+    fees: "~₹28L–₹32L",
+    exam: "IIMK BMS Aptitude Test: 19 May 2026",
+    apply_date: "25 April 2026",
+    exam_date: "19 May 2026",
+    commence: "August 2026",
+    refund: "As per IIM policy",
+    roi: 8,
+    type: "iim",
+    status: "not_started",
+    notes: "Premium IIM UG programme. IIMK is a top-5 IIM. BMS is a flagship residential UG program — exceptional for management.",
+    starred: false
+  },
+  {
+    name: "Indian Institute of Management Bodh Gaya",
+    program: "IPM",
+    mode: "Residential",
+    duration: "5 Years",
+    fees: "~₹30L–₹33L",
+    exam: "JIPMAT 2026",
+    apply_date: "JIPMAT deadline ~April 2026",
+    exam_date: "June 2026",
+    commence: "August 2026",
+    refund: "As per IIM policy",
+    roi: 7,
+    type: "iim",
+    status: "not_started",
+    notes: "Good ROI among newer IIMs. JIPMAT based. Residential campus.",
+    starred: false
+  },
+  {
+    name: "Indian Institute of Management Udaipur",
+    program: "Online Management Program",
+    mode: "Online",
+    duration: "3 Years",
+    fees: "~₹12L–₹16L",
+    exam: "Profile/Test",
+    apply_date: "Ongoing",
+    exam_date: "Rolling",
+    commence: "Rolling",
+    refund: "As per policy",
+    roi: 7,
+    type: "iim",
+    status: "not_started",
+    notes: "Flexible IIM-tag option. Good for those who want IIM brand with flexibility.",
+    starred: false
+  },
+  {
+    name: "Indian Institute of Technology Patna",
+    program: "Hybrid BBA",
+    mode: "Hybrid",
+    duration: "3 Years",
+    fees: "~₹3.4L",
+    exam: "Institute Selection",
+    apply_date: "Admissions Open",
+    exam_date: "TBA",
+    commence: "August 2026",
+    refund: "As per IIT policy",
+    roi: 8,
+    type: "iit",
+    status: "not_started",
+    notes: "Cheap IIT-tag management option. Extremely low fees with IIT brand. Hidden gem.",
+    starred: true
+  },
+  {
+    name: "Indian Institute of Technology Madras",
+    program: "Online BS / Management Pathway",
+    mode: "Online",
+    duration: "4 Years",
+    fees: "~₹3.8L–₹4.5L",
+    exam: "Qualifier Exam",
+    apply_date: "31 May 2026",
+    exam_date: "May–June 2026",
+    commence: "Jan / Sep cycle",
+    refund: "Before course start",
+    roi: 9,
+    type: "iit",
+    status: "researching",
+    notes: "Strong academics + flexibility. IIT Madras online BS is globally recognized. Very high ROI for the price.",
+    starred: true
+  },
+  {
+    name: "BITS Law School",
+    program: "BBA LLB",
+    mode: "Residential",
+    duration: "5 Years",
+    fees: "₹31L–₹36L",
+    exam: "BITSLAT / LNAT / CLAT accepted",
+    apply_date: "Ongoing rounds",
+    exam_date: "May–June 2026",
+    commence: "August 2026",
+    refund: "Within 10 days of joining",
+    roi: 7,
+    type: "law",
+    status: "not_started",
+    notes: "Premium private law-school ecosystem. BITS brand + law. BITSLAT / CLAT accepted.",
+    starred: false
+  },
+  {
+    name: "Symbiosis Centre for Management Studies (SCMS Pune)",
+    program: "BBA (Hons.)",
+    mode: "Residential",
+    duration: "4 Years",
+    fees: "~₹15.8L–₹24L with hostel",
+    exam: "SET Exam",
+    apply_date: "SET cycle yearly",
+    exam_date: "May 2026",
+    commence: "August 2026",
+    refund: "Within 15 days of joining",
+    roi: 7,
+    type: "private",
+    status: "not_started",
+    notes: "Good exposure + Delhi NCR corporate access. Symbiosis tag respected. Good peer network.",
+    starred: false
+  },
+  {
+    name: "University of Delhi (CUET Colleges – SSCBS, DDUC etc.)",
+    program: "BMS / BBA FIA",
+    mode: "Residential/Day Scholar",
+    duration: "3 Years",
+    fees: "₹60K–₹3L",
+    exam: "CUET UG",
+    apply_date: "CUET cycle",
+    exam_date: "May–June 2026",
+    commence: "October 2026",
+    refund: "N/A (Govt college)",
+    roi: 10,
+    type: "du",
+    status: "not_started",
+    notes: "Best ROI in India if top DU college. SSCBS/DDUC are elite. Delhi network + low fees = unbeatable value.",
+    starred: true
+  },
+  {
+    name: "Panjab University – UIAMS Sectoral",
+    program: "Integrated BBA-MBA",
+    mode: "Residential",
+    duration: "5 Years",
+    fees: "~₹5L–₹7L",
+    exam: "Merit-Based (No Entrance)",
+    apply_date: "23 June 2026",
+    exam_date: "N/A (Merit Based)",
+    commence: "August 2026",
+    refund: "Within 30 days of admission",
+    roi: 8,
+    type: "other",
+    status: "not_started",
+    notes: "Massive ROI + Chandigarh life. No entrance exam. Integrated BBA-MBA for just ₹5–7L total. Excellent value.",
+    starred: false
+  },
+  {
+    name: "Thapar Institute of Engineering and Technology (TSLAS)",
+    program: "Liberal Arts / Management-related",
+    mode: "Residential",
+    duration: "3 Years",
+    fees: "₹17.33L",
+    exam: "Merit/Profile",
+    apply_date: "Rolling Rounds",
+    exam_date: "Profile-based",
+    commence: "August 2026",
+    refund: "Before semester start",
+    roi: 7,
+    type: "private",
+    status: "not_started",
+    notes: "Strong campus life + networking. Thapar brand well known in North India. Good management + liberal arts blend.",
+    starred: false
+  },
+  {
+    name: "IFMR Graduate School of Business",
+    program: "Integrated BBA + MBA",
+    mode: "Residential",
+    duration: "5 Years",
+    fees: "₹41.8L",
+    exam: "Test + Interview",
+    apply_date: "Ongoing",
+    exam_date: "Rolling",
+    commence: "August 2026",
+    refund: "Within 15 days",
+    roi: 6,
+    type: "private",
+    status: "not_started",
+    notes: "Structured corporate-management route. High fees but integrated program. IFMR has solid corporate connections.",
+    starred: false
+  }
+];
+
+const defaultChecklists = {
+  "📄 Documents to Prepare": [
+    { label: "Class 10 Marksheet + Certificate", tag: "Academic", done: false },
+    { label: "Class 12 Marksheet (if available)", tag: "Academic", done: false },
+    { label: "Passport-size photos (10+)", tag: "General", done: false },
+    { label: "Aadhaar Card / ID Proof (self + parent)", tag: "KYC", done: false },
+    { label: "Address Proof", tag: "KYC", done: false },
+    { label: "Category Certificate (SC/ST/OBC/EWS if applicable)", tag: "Category", done: false },
+    { label: "Income Certificate (if EWS/scholarship)", tag: "Finance", done: false },
+    { label: "Gap Year Certificate (if applicable)", tag: "Academic", done: false },
+    { label: "Migration Certificate from school", tag: "Academic", done: false }
+  ],
+  "📝 Exams to Register / Appear": [
+    { label: "JIPMAT 2026 Registration", tag: "IIM", done: false },
+    { label: "N-MET UG (NALSAR IPM)", tag: "Law", done: false },
+    { label: "CLAT 2026 Registration", tag: "Law", done: false },
+    { label: "CUET UG 2026 Registration", tag: "DU", done: false },
+    { label: "IIMK BMS Aptitude Test (19 May 2026)", tag: "IIM", done: false },
+    { label: "IIM Bangalore Entrance Test (26 July 2026)", tag: "IIM", done: false },
+    { label: "IIT Madras Qualifier Exam", tag: "IIT", done: false },
+    { label: "SET Exam (Symbiosis)", tag: "Private", done: false },
+    { label: "BITSLAT / LNAT (BITS Law)", tag: "Law", done: false }
+  ],
+  "💻 Applications to Submit": [
+    { label: "NALSAR IPM application", tag: "Apply", done: false },
+    { label: "IIM Bangalore BBA DBE form", tag: "Apply", done: false },
+    { label: "IIT Madras BS application", tag: "Apply", done: false },
+    { label: "IIMK BMS application (before 25 April)", tag: "Apply", done: false },
+    { label: "IIT Patna Hybrid BBA form", tag: "Apply", done: false },
+    { label: "DU CUET application (SSCBS / DDUC)", tag: "Apply", done: false },
+    { label: "Panjab University UIAMS application", tag: "Apply", done: false },
+    { label: "Symbiosis SCMS application", tag: "Apply", done: false }
+  ],
+  "🎯 Exam Preparation": [
+    { label: "JIPMAT mock tests (5+)", tag: "Prep", done: false },
+    { label: "CLAT current affairs revision", tag: "Prep", done: false },
+    { label: "CUET mock tests (subject-wise)", tag: "Prep", done: false },
+    { label: "N-MET UG previous papers practice", tag: "Prep", done: false },
+    { label: "IIT Madras qualifier syllabus review", tag: "Prep", done: false },
+    { label: "SOP / Statement of Purpose draft", tag: "PI Prep", done: false },
+    { label: "PI preparation (common interview questions)", tag: "PI Prep", done: false }
+  ],
+  "💰 Fees & Finance Planning": [
+    { label: "Shortlist colleges by budget range", tag: "Finance", done: false },
+    { label: "Check scholarship options for each college", tag: "Scholarship", done: false },
+    { label: "Education loan eligibility check", tag: "Loan", done: false },
+    { label: "Note last refund dates for each college", tag: "Finance", done: false },
+    { label: "Compare ROI across shortlisted colleges", tag: "Research", done: false }
+  ],
+  "🔍 Research & Decision": [
+    { label: "Attend virtual / physical open days", tag: "Research", done: false },
+    { label: "Connect with current students on LinkedIn", tag: "Network", done: false },
+    { label: "Check placement reports (past 3 years)", tag: "Research", done: false },
+    { label: "Finalise Top 3 preferred colleges", tag: "Decision", done: false },
+    { label: "Decide backup options (2+)", tag: "Decision", done: false }
+  ]
+};
+
+const defaultNotes = [
+  {
+    college: "NALSAR IPM",
+    content: "This should be my primary target. Strong legal + business combo, unique in India. N-MET UG exam is separate from CLAT. Hyderabad campus is growing. Start specific prep for PI.",
+    tag: "strategy",
+    date: "May 2026"
+  },
+  {
+    college: "IIT Madras BS",
+    content: "Can do this alongside other degrees potentially? Check rules. Qualifier exam is solvable with 10+2 level maths. Extremely high value for low cost — don't ignore this.",
+    tag: "insight",
+    date: "May 2026"
+  },
+  {
+    college: "DU (SSCBS / DDUC)",
+    content: "CUET marks need to be very high for SSCBS. 97th+ percentile required typically. Not to be treated as a safety. Prepare seriously.",
+    tag: "concern",
+    date: "May 2026"
+  }
+];
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+
+let colleges = JSON.parse(localStorage.getItem('colleges') || 'null') || defaultColleges;
+let checklists = JSON.parse(localStorage.getItem('checklists') || 'null') || defaultChecklists;
+let notes = JSON.parse(localStorage.getItem('notes') || 'null') || defaultNotes;
+
+function save() {
+  localStorage.setItem('colleges', JSON.stringify(colleges));
+  localStorage.setItem('checklists', JSON.stringify(checklists));
+  localStorage.setItem('notes', JSON.stringify(notes));
+}
+
+// ─── UTILITIES ────────────────────────────────────────────────────────────────
+
+function daysUntil(dateStr) {
+  if (!dateStr || dateStr === 'TBA' || dateStr === 'Rolling' || dateStr === 'Ongoing' || dateStr === 'N/A (Govt college)') return null;
+  const months = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+  let d = null;
+  // Try "DD Month YYYY" or "Month YYYY"
+  const m1 = dateStr.match(/(\d{1,2})\s+(\w+)\s+(\d{4})/i);
+  const m2 = dateStr.match(/(\w+)\s+(\d{4})/i);
+  const m3 = dateStr.match(/(\d{4})/);
+  if (m1) d = new Date(+m1[3], months[m1[2].toLowerCase().slice(0,3)], +m1[1]);
+  else if (m2) d = new Date(+m2[2], months[m2[1].toLowerCase().slice(0,3)], 1);
+  else if (m3) d = new Date(+m3[1], 6, 1);
+  if (!d || isNaN(d)) return null;
+  const diff = Math.round((d - Date.now()) / 86400000);
+  return diff;
+}
+
+function countdownBadge(dateStr) {
+  const d = daysUntil(dateStr);
+  if (d === null) return '';
+  if (d < 0) return `<span class="countdown past">Passed</span>`;
+  if (d === 0) return `<span class="countdown urgent">TODAY</span>`;
+  if (d <= 10) return `<span class="countdown urgent">${d}d left</span>`;
+  if (d <= 30) return `<span class="countdown warn">${d}d left</span>`;
+  return `<span class="countdown safe">${d}d left</span>`;
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+
+function renderColleges() {
+  const grid = document.getElementById('collegesGrid');
+  let list = colleges;
+  if (currentFilter === 'starred') list = colleges.filter(c => c.starred);
+  else if (currentFilter === 'applied') list = colleges.filter(c => c.status === 'applied');
+  else if (currentFilter === 'iim') list = colleges.filter(c => c.type === 'iim');
+  else if (currentFilter === 'iit') list = colleges.filter(c => c.type === 'iit');
+  else if (currentFilter === 'law') list = colleges.filter(c => c.type === 'law');
+
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty-state"><h3>No colleges here yet</h3><p>Click "+ Add College" to get started.</p></div>`;
+    return;
+  }
+
+  const indices = list.map(c => colleges.indexOf(c));
+
+  grid.innerHTML = list.map((c, i) => {
+    const idx = indices[i];
+    const [badgeLabel, badgeClass] = TYPE_BADGES[c.type] || ['',''];
+    const badge = badgeLabel ? `<span class="badge ${badgeClass}">${badgeLabel}</span>` : '';
+    const starClass = c.starred ? 'starred' : '';
+    const starBtnClass = c.starred ? 'star-btn starred' : 'star-btn';
+    const roiWidth = Math.min(100, (c.roi || 0) * 10);
+    const roiColor = c.roi >= 8 ? 'var(--green)' : c.roi >= 6 ? 'var(--gold)' : 'var(--accent2)';
+
+    const statusLabel = STATUS_LABELS[c.status] || c.status;
+
+    return `
+    <div class="college-card ${starClass}" id="card-${idx}">
+      <div class="card-main">
+        <div class="card-left">
+          <div class="college-name-row">
+            <span class="college-name">${c.name}</span>
+            ${badge}
+            ${countdownBadge(c.apply_date)}
+          </div>
+          <div class="college-meta">
+            <span class="meta-item">📚 <strong>${c.program}</strong></span>
+            <span class="meta-item">🏠 ${c.mode}</span>
+            <span class="meta-item">⏱ ${c.duration}</span>
+            <span class="meta-item">🎯 ${c.exam}</span>
+          </div>
+          <div class="card-dates">
+            ${c.apply_date ? `<span class="date-chip deadline">📅 Apply by: ${c.apply_date}</span>` : ''}
+            ${c.exam_date && c.exam_date !== 'TBA' ? `<span class="date-chip exam">📝 Exam: ${c.exam_date}</span>` : ''}
+            ${c.commence && c.commence !== 'TBA' ? `<span class="date-chip commence">🎓 Starts: ${c.commence}</span>` : ''}
+            ${c.refund && c.refund !== 'TBA' ? `<span class="date-chip refund">💸 Refund: ${c.refund}</span>` : ''}
+          </div>
+        </div>
+        <div class="card-right">
+          <div class="fees-display">
+            <div class="fees-amount">${c.fees}</div>
+            <div class="fees-label">Total Fees</div>
+          </div>
+          <div class="roi-bar" data-tip="ROI score: ${c.roi}/10">
+            <div class="roi-label"><span>ROI</span><span style="color:${roiColor}">${c.roi}/10</span></div>
+            <div class="roi-track"><div class="roi-fill" style="width:${roiWidth}%;background:${roiColor}"></div></div>
+          </div>
+          <div class="card-actions">
+            <button class="action-btn ${starBtnClass}" onclick="toggleStar(${idx})" title="Star this college">⭐</button>
+            <button class="action-btn" onclick="toggleNotes(${idx})" title="View notes">📋</button>
+            <button class="action-btn" onclick="openEditModal(${idx})" title="Edit">✏️</button>
+            <select class="status-select" onchange="changeStatus(${idx}, this.value)">
+              ${Object.entries(STATUS_LABELS).map(([k,v]) => `<option value="${k}" ${c.status===k?'selected':''}>${v}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="card-notes" id="notes-${idx}">
+        <p><strong>Notes:</strong> ${c.notes || 'No notes yet.'}</p>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderChecklist() {
+  const grid = document.getElementById('checklistGrid');
+  let totalItems = 0, doneItems = 0;
+
+  grid.innerHTML = Object.entries(checklists).map(([section, items]) => {
+    const done = items.filter(i => i.done).length;
+    totalItems += items.length; doneItems += done;
+    const allDone = done === items.length;
+    return `
+    <div class="checklist-card">
+      <div class="checklist-header">
+        <div class="checklist-title">${section}</div>
+        <div class="progress-pill ${allDone?'done':''}">${done}/${items.length}</div>
+      </div>
+      <div class="checklist-items">
+        ${items.map((item, i) => `
+          <div class="checklist-item ${item.done?'checked':''}" onclick="toggleCheck('${section}',${i})">
+            <div class="check-box">${item.done?'✓':''}</div>
+            <span class="check-label">${item.label}</span>
+            <span class="check-tag">${item.tag}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  const pct = totalItems > 0 ? Math.round(doneItems/totalItems*100) : 0;
+  document.getElementById('statChecklist').textContent = pct + '%';
+}
+
+function renderTimeline() {
+  const tl = document.getElementById('timelineEl');
+  const events = [];
+
+  colleges.forEach(c => {
+    const addEvent = (dateStr, label, type) => {
+      const d = daysUntil(dateStr);
+      if (d !== null) {
+        events.push({ college: c.name, program: c.program, label, dateStr, days: d, type });
+      }
+    };
+    if (c.apply_date) addEvent(c.apply_date, 'Application Deadline', 'deadline');
+    if (c.exam_date && c.exam_date !== 'TBA') addEvent(c.exam_date, 'Exam Date', 'exam');
+    if (c.commence && !['TBA','Rolling','August 2026'].includes(c.commence)) addEvent(c.commence, 'Course Commences', 'commence');
+  });
+
+  events.sort((a,b) => a.days - b.days);
+
+  if (!events.length) {
+    tl.innerHTML = '<div class="empty-state"><h3>No dates to show</h3><p>Add colleges with deadlines to see them here.</p></div>';
+    return;
+  }
+
+  const typeConfig = {
+    deadline: { icon: '📅', cls: 'urgent', dateCls: 'red', label: 'Apply by' },
+    exam: { icon: '📝', cls: 'normal', dateCls: 'purple', label: 'Exam on' },
+    commence: { icon: '🎓', cls: 'soon', dateCls: 'green', label: 'Starts' },
+    refund: { icon: '💸', cls: 'soon', dateCls: 'gold', label: 'Refund by' }
+  };
+
+  tl.innerHTML = events.map(ev => {
+    const cfg = typeConfig[ev.type] || typeConfig.deadline;
+    const past = ev.days < 0;
+    const cls = past ? 'done' : cfg.cls;
+    const daysText = past ? '(Passed)' : ev.days === 0 ? 'TODAY' : `in ${ev.days} days`;
+    return `
+    <div class="timeline-item">
+      <div class="tl-dot ${cls}">${cfg.icon}</div>
+      <div class="tl-content">
+        <div class="tl-college">${ev.college}</div>
+        <div class="tl-event">${ev.program} — ${cfg.label}</div>
+        <div class="tl-date ${past?'':cfg.dateCls}">${ev.dateStr} <span style="opacity:0.7;font-weight:400">${daysText}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderNotes() {
+  const grid = document.getElementById('notesGrid');
+  if (!notes.length) {
+    grid.innerHTML = '<div class="empty-state"><h3>No notes yet</h3><p>Click "+ Add Note" to capture your research.</p></div>';
+    return;
+  }
+  grid.innerHTML = notes.map((n, i) => `
+    <div class="note-card" onclick="openEditNote(${i})">
+      <div class="note-header">
+        <div class="note-college">${n.college}</div>
+        <div class="note-date">${n.date}</div>
+      </div>
+      <div class="note-content">${n.content}</div>
+      <span class="note-tag ${n.tag}">${n.tag.charAt(0).toUpperCase()+n.tag.slice(1)}</span>
+    </div>`).join('');
+}
+
+function renderStats() {
+  document.getElementById('statTotal').textContent = colleges.length;
+  document.getElementById('statStarred').textContent = colleges.filter(c=>c.starred).length;
+  document.getElementById('statApplied').textContent = colleges.filter(c=>c.status==='applied'||c.status==='offer_received').length;
+  const now = new Date();
+  document.getElementById('statDeadlines').textContent = colleges.filter(c => {
+    const d = daysUntil(c.apply_date);
+    return d !== null && d >= 0 && d <= 45;
+  }).length;
+}
+
+function renderAll() {
+  renderColleges();
+  renderChecklist();
+  renderTimeline();
+  renderNotes();
+  renderStats();
+}
+
+// ─── INTERACTIONS ─────────────────────────────────────────────────────────────
+
+function showTab(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function filterColleges(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderColleges();
+}
+
+function toggleStar(idx) {
+  colleges[idx].starred = !colleges[idx].starred;
+  save(); renderColleges(); renderStats();
+}
+
+function toggleNotes(idx) {
+  const el = document.getElementById('notes-' + idx);
+  if (el) el.classList.toggle('open');
+}
+
+function changeStatus(idx, val) {
+  colleges[idx].status = val;
+  save(); renderStats();
+}
+
+function toggleCheck(section, itemIdx) {
+  checklists[section][itemIdx].done = !checklists[section][itemIdx].done;
+  save(); renderChecklist();
+}
+
+// ─── MODAL ────────────────────────────────────────────────────────────────────
+
+function openAddModal() {
+  editingIndex = -1;
+  document.getElementById('modalTitle').textContent = 'Add College';
+  document.getElementById('deleteBtn').style.display = 'none';
+  ['name','program','mode','fees','exam','apply_date','exam_date','commence','refund','notes'].forEach(f => {
+    const el = document.getElementById('f_' + f);
+    if (el) el.value = '';
+  });
+  document.getElementById('f_roi').value = 7;
+  document.getElementById('f_status').value = 'not_started';
+  document.getElementById('f_type').value = 'other';
+  document.getElementById('f_duration').value = '';
+  document.getElementById('editModal').classList.add('open');
+}
+
+function openEditModal(idx) {
+  editingIndex = idx;
+  const c = colleges[idx];
+  document.getElementById('modalTitle').textContent = 'Edit College';
+  document.getElementById('deleteBtn').style.display = 'block';
+  document.getElementById('f_name').value = c.name || '';
+  document.getElementById('f_program').value = c.program || '';
+  document.getElementById('f_mode').value = c.mode || 'Residential';
+  document.getElementById('f_duration').value = c.duration || '';
+  document.getElementById('f_fees').value = c.fees || '';
+  document.getElementById('f_exam').value = c.exam || '';
+  document.getElementById('f_apply_date').value = c.apply_date || '';
+  document.getElementById('f_exam_date').value = c.exam_date || '';
+  document.getElementById('f_commence').value = c.commence || '';
+  document.getElementById('f_refund').value = c.refund || '';
+  document.getElementById('f_roi').value = c.roi || 7;
+  document.getElementById('f_type').value = c.type || 'other';
+  document.getElementById('f_status').value = c.status || 'not_started';
+  document.getElementById('f_notes').value = c.notes || '';
+  document.getElementById('editModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('editModal').classList.remove('open');
+}
+
+function saveCollege() {
+  const c = {
+    name: document.getElementById('f_name').value.trim(),
+    program: document.getElementById('f_program').value.trim(),
+    mode: document.getElementById('f_mode').value,
+    duration: document.getElementById('f_duration').value.trim(),
+    fees: document.getElementById('f_fees').value.trim(),
+    exam: document.getElementById('f_exam').value.trim(),
+    apply_date: document.getElementById('f_apply_date').value.trim(),
+    exam_date: document.getElementById('f_exam_date').value.trim(),
+    commence: document.getElementById('f_commence').value.trim(),
+    refund: document.getElementById('f_refund').value.trim(),
+    roi: parseInt(document.getElementById('f_roi').value) || 7,
+    type: document.getElementById('f_type').value,
+    status: document.getElementById('f_status').value,
+    notes: document.getElementById('f_notes').value.trim(),
+    starred: editingIndex >= 0 ? colleges[editingIndex].starred : false
+  };
+  if (!c.name) { alert('College name is required.'); return; }
+  if (editingIndex >= 0) colleges[editingIndex] = c;
+  else colleges.push(c);
+  save(); closeModal(); renderAll();
+}
+
+function deleteCollege() {
+  if (!confirm('Delete this college?')) return;
+  colleges.splice(editingIndex, 1);
+  save(); closeModal(); renderAll();
+}
+
+// ─── NOTE MODAL ───────────────────────────────────────────────────────────────
+
+function openAddNote() {
+  editingNoteIndex = -1;
+  document.getElementById('noteModalTitle').textContent = 'Add Note';
+  document.getElementById('noteDeleteBtn').style.display = 'none';
+  document.getElementById('n_college').value = '';
+  document.getElementById('n_content').value = '';
+  document.getElementById('n_tag').value = 'strategy';
+  document.getElementById('noteModal').classList.add('open');
+}
+
+function openEditNote(idx) {
+  editingNoteIndex = idx;
+  const n = notes[idx];
+  document.getElementById('noteModalTitle').textContent = 'Edit Note';
+  document.getElementById('noteDeleteBtn').style.display = 'block';
+  document.getElementById('n_college').value = n.college || '';
+  document.getElementById('n_content').value = n.content || '';
+  document.getElementById('n_tag').value = n.tag || 'strategy';
+  document.getElementById('noteModal').classList.add('open');
+}
+
+function closeNoteModal() {
+  document.getElementById('noteModal').classList.remove('open');
+}
+
+function saveNote() {
+  const n = {
+    college: document.getElementById('n_college').value.trim() || 'General',
+    content: document.getElementById('n_content').value.trim(),
+    tag: document.getElementById('n_tag').value,
+    date: new Date().toLocaleDateString('en-IN', {month:'short', year:'numeric'})
+  };
+  if (!n.content) { alert('Note content is required.'); return; }
+  if (editingNoteIndex >= 0) notes[editingNoteIndex] = n;
+  else notes.push(n);
+  save(); closeNoteModal(); renderNotes();
+}
+
+function deleteNote() {
+  if (!confirm('Delete this note?')) return;
+  notes.splice(editingNoteIndex, 1);
+  save(); closeNoteModal(); renderNotes();
+}
+
+// Close modal on overlay click
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.getElementById('noteModal').addEventListener('click', function(e) {
+  if (e.target === this) closeNoteModal();
+});
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+renderAll();
+</script>
+</body>
+</html>
